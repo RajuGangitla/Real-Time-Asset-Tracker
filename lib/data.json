@@ -1,0 +1,24 @@
+[
+  {
+    "id": "BTC",
+    "name": "Bitcoin",
+    "price": 64230.50,
+    "currency": "USD",
+    "lastUpdated": "2023-10-27T10:00:00Z"
+  },
+  {
+    "id": "ETH",
+    "name": "Ethereum",
+    "price": 3450.75,
+    "currency": "USD",
+    "lastUpdated": "2023-10-27T10:00:00Z"
+  },
+  {
+    "id": "SOL",
+    "name": "Solana",
+    "price": 145.20,
+    "currency": "USD",
+    "lastUpdated": "2023-10-27T10:00:00Z"
+  }
+]
+
