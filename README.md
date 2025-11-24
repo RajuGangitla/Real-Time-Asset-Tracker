@@ -1,57 +1,57 @@
 # Real-Time Asset Tracker (Simulated)
 
-A Next.js widget that tracks asset prices via simulated polling. This project demonstrates handling complex effect dependencies, avoiding stale closures, and managing memory leaks in React.
+This project is a high-performance Next.js widget that tracks simulated asset prices. It solves complex React challenges including effect dependency management, stale closures, and performance optimization using React.memo and Redux selectors.
 
-## Features
+## Solutions to Technical Challenges
 
-- **Real-Time Simulation**: Polling with simulated network latency.
-- **Smart Polling**: Adjusts based on user interaction (Alert Threshold) without resetting timers unnecessarily.
-- **Redux Toolkit**: State management for price history.
-- **Performance**: Memoized selectors and optimized re-renders.
-- **SEO**: Dynamic metadata for asset pages.
+### 1. The "Timer Reset" Issue
+**Problem:** The requirements stated that changing the "Alert Threshold" input must not reset the polling timer. Adding `alertThreshold` to the dependency array of `useEffect` would normally cause the effect (and the timer) to restart on every keystroke.
+
+**Solution:**
+We utilized `useRef` to create a stable reference to the threshold value.
+- `const thresholdRef = useRef(alertThreshold);`
+- An independent `useEffect` updates `thresholdRef.current` whenever the prop changes.
+- The polling effect reads from `thresholdRef.current`. Since the ref itself does not change identity, the polling effect is not re-triggered, allowing the timer to continue uninterrupted while still accessing the latest value.
+
+### 2. Performance Optimization (Re-renders)
+**Problem:** The requirement was to ensure updating the price history only re-renders the Price component, not the entire Page Layout.
+
+**Solution:**
+We implemented a strict "Smart/Dumb" component architecture:
+- **Headless Hook:** `useAssetTracker` does not return state. It only dispatches actions to Redux. This prevents the parent `AssetTrackerClient` from re-rendering on every price update.
+- **Smart Child Component:** `PriceDisplay` subscribes directly to the Redux store using `selectLatestAssetPrice`. Only this specific sub-component re-renders when data arrives.
+- **Memoization:** All UI sub-components (`StatCard`, `TrackerControls`) are wrapped in `React.memo`.
+- **Debouncing:** The alert input uses local state and debouncing to prevent parent re-renders while typing.
 
 ## Architecture
 
-**Data Flow:**
-Static JSON (`lib/data.json`) -> `useAssetTracker` Hook (Simulation) -> Redux Store (`assetSlice`) -> UI Components (Chart/Price)
+**Data Flow Diagram:**
+Static JSON -> useAssetTracker Hook (Simulation) -> Redux Store -> Smart Components -> UI
 
-## Getting Started
+1. **Simulation Layer:** The hook simulates network latency (500ms-1500ms) and random price fluctuation.
+2. **State Management:** Redux Toolkit stores the full price history.
+3. **Presentation:** 
+   - `AssetTrackerClient`: Layout container (Static after mount).
+   - `PriceDisplay`: Connected component (Dynamic updates).
 
-### Prerequisites
+## Project Structure
 
-- Node.js (v18+)
-- npm, yarn, pnpm, or bun
+- `app/`: Next.js App Router pages.
+- `components/AssetTrackerClient/`: The main widget, split into sub-components (`PriceDisplay`, `TrackerControls`, `StatCard`).
+- `hooks/`: Custom hooks (`useAssetTracker`).
+- `lib/store/`: Redux configuration, slices, and memoized selectors.
+- `types/`: Centralized type definitions.
 
-### Installation
+## Local Run Instructions
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd real-time-asset-tracker
-   ```
-
-2. Install dependencies:
+1. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Run the development server:
+2. Run the development server:
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser.
-
-## Project Structure
-
-- `app/`: Next.js App Router pages and layouts.
-- `lib/store/`: Redux store configuration and slices.
-- `lib/data.json`: Static data for simulated fetching.
-- `components/`: React components (Container vs Presentational).
-
-## Technologies
-
-- Next.js 16 (App Router)
-- TypeScript
-- Redux Toolkit
-- Tailwind CSS
+3. Open http://localhost:3000 in your browser.

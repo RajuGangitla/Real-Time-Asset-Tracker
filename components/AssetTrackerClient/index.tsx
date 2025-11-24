@@ -1,74 +1,74 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAssetTracker } from "@/hooks/useAssetTracker";
 import { toast } from "sonner";
+import { Activity, AlertCircle } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
+import { PriceDisplay } from "./components/PriceDisplay";
+import { TrackerControls } from "./components/TrackerControls";
 
 export default function AssetTrackerClient({ assetId }: { assetId: string }) {
     const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true);
     const [alertThreshold, setAlertThreshold] = useState(65000);
 
-    const { latestPrice, highLow } = useAssetTracker(
+    const handleThresholdChange = useCallback((val: number) => {
+        setAlertThreshold(val);
+    }, []);
+
+    const handleAutoRefreshChange = useCallback((val: boolean) => {
+        setIsAutoRefreshEnabled(val);
+    }, []);
+
+    const handleAlert = useCallback((price: number, threshold: number) => {
+        toast.warning(`Price Alert!`, {
+            description: `${assetId} just crossed $${threshold.toLocaleString()} (Current: $${price.toLocaleString()})`,
+            duration: 5000,
+            icon: <AlertCircle className="h-5 w-5 text-amber-500" />,
+        });
+    }, [assetId]);
+
+
+    useAssetTracker(
         assetId,
         "USD",
         3000,
         alertThreshold,
         isAutoRefreshEnabled,
         "free",
-        (price, threshold) => {
-            toast(`🚨 ${assetId} crossed $${threshold}! Current: $${price}`);
-        }
+        handleAlert
     );
 
     return (
-        <div className="flex items-center justify-center min-h-[70vh] p-4">
-            <Card className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                <CardHeader>
-                    <CardTitle className="text-center text-xl">
-                        {assetId} Price Tracker
-                    </CardTitle>
+        <div className="relative flex items-center justify-center min-h-screen p-4 animate-in fade-in zoom-in duration-500">
+            <div className="absolute top-4 right-4">
+                <ModeToggle />
+            </div>
+            <Card className="w-full max-w-lg shadow-2xl border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <CardHeader className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800 pb-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-3xl font-bold tracking-tight">
+                                {assetId} Tracker
+                            </CardTitle>
+                            <CardDescription className="text-base mt-1">Real-time market simulation</CardDescription>
+                        </div>
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Activity className="h-6 w-6 text-primary" />
+                        </div>
+                    </div>
                 </CardHeader>
 
-                <CardContent className="space-y-5">
-                    <div className="text-center text-lg">
-                        <span className="text-zinc-600 dark:text-zinc-300">Current:</span>{" "}
-                        <strong className="text-zinc-900 dark:text-white">
-                            {latestPrice !== null ? `$${latestPrice}` : "Loading..."}
-                        </strong>
-                    </div>
-
-                    <div className="flex justify-between text-sm opacity-80">
-                        <p>High: {highLow.high ?? "-"}</p>
-                        <p>Low: {highLow.low ?? "-"}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <label className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Alert Above
-                        </label>
-                        <Input
-                            type="number"
-                            value={alertThreshold}
-                            onChange={(e) => setAlertThreshold(Number(e.target.value))}
-                        />
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm">Enable Auto Refresh</span>
-                        <Switch
-                            checked={isAutoRefreshEnabled}
-                            onCheckedChange={setIsAutoRefreshEnabled}
-                        />
-                    </div>
-
-                    {!isAutoRefreshEnabled && (
-                        <p className="text-xs text-center opacity-60">
-                            Auto refresh is off
-                        </p>
-                    )}
+                <CardContent className="space-y-8 pt-8">
+                    <PriceDisplay currency="USD" />
+                    
+                    <TrackerControls 
+                        threshold={alertThreshold}
+                        isAutoRefresh={isAutoRefreshEnabled}
+                        onThresholdChange={handleThresholdChange}
+                        onAutoRefreshChange={handleAutoRefreshChange}
+                    />
                 </CardContent>
             </Card>
         </div>
