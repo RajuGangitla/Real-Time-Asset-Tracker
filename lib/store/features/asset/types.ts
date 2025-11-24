@@ -1,3 +1,3 @@
-export interface AssetState {
-  priceHistory: number[];
-}
+import { AssetState } from "@/types";
+
+export type { AssetState };

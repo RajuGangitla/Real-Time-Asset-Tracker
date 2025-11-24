@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { useEffect, useRef } from "react";
+import { useAppDispatch } from "@/lib/store/hooks";
 import { addPrice } from "@/lib/store/features/asset/assetSlice";
-import { selectHighLow } from "@/lib/store/features/asset/selectors";
 import { simulateFetchPrice } from "@/lib/api/simulateFetch";
 
 export function useAssetTracker(
@@ -16,8 +15,6 @@ export function useAssetTracker(
   onAlertTriggered: (price: number, threshold: number) => void
 ) {
   const dispatch = useAppDispatch();
-  const [latestPrice, setLatestPrice] = useState<number | null>(null);
-  const highLow = useAppSelector(selectHighLow);
 
   const thresholdRef = useRef(alertThreshold);
   const onAlertRef = useRef(onAlertTriggered);
@@ -44,8 +41,6 @@ export function useAssetTracker(
 
       promise.then((price) => {
         if (!isMounted) return;
-
-        setLatestPrice(price);
         dispatch(addPrice(price));
 
         if (price > thresholdRef.current) {
@@ -70,9 +65,5 @@ export function useAssetTracker(
       console.log("Cleaning up resource for:", assetId);
     };
   }, [assetId, currency, pollInterval, userTier, isAutoRefreshEnabled]);
-
-  return {
-    latestPrice,
-    highLow,
-  };
+  
 }
