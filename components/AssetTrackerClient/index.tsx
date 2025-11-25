@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAssetTracker } from "@/hooks/useAssetTracker";
 import { toast } from "sonner";
-import { Activity, AlertCircle } from "lucide-react";
+import { Activity, AlertCircle, ArrowLeft } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { PriceDisplay } from "./components/PriceDisplay";
 import { TrackerControls } from "./components/TrackerControls";
@@ -42,6 +44,14 @@ export default function AssetTrackerClient({ assetId }: { assetId: string }) {
 
     return (
         <div className="relative flex items-center justify-center min-h-screen p-4 animate-in fade-in zoom-in duration-500">
+            <div className="absolute top-4 left-4">
+                <Link href="/">
+                    <Button variant="outline" size="icon" title="Back to Home">
+                        <ArrowLeft className="h-[1.2rem] w-[1.2rem]" />
+                        <span className="sr-only">Back</span>
+                    </Button>
+                </Link>
+            </div>
             <div className="absolute top-4 right-4">
                 <ModeToggle />
             </div>
